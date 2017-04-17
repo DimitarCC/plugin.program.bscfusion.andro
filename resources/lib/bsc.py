@@ -229,7 +229,7 @@ class dodat():
 
             from HTMLParser import HTMLParser as h
             self.__js = json.loads(h().unescape(json.dumps(self.__js).decode(self.__char_set)))
-
+		  #Disable LogOut for now since the new changes in Fusion platform requires user to be logged in so to can open RTMP streams
           #self.__log_out()
           #if r.status_code != requests.codes.ok:
             #self.__log_dat('Error status code: %d' % (r.status_code, ))
