@@ -189,7 +189,7 @@ try:
           os.system(__script)
 
       if __addon__.getSetting('en_reload_pvr')== 'true':
-		if not is_player_active():
+		if not is_playing_service():
 			reload_simple_pvr()
 
 except Exception as e:
