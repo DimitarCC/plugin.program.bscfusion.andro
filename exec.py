@@ -9,7 +9,6 @@ import xbmcvfs
 import re
 import simplejson as json
 import urllib
-from ga import ga
 
 __addon__ = xbmcaddon.Addon()
 __author__ = __addon__.getAddonInfo('author')
@@ -18,11 +17,11 @@ __scriptname__ = __addon__.getAddonInfo('name')
 __version__ = __addon__.getAddonInfo('version')
 __icon__ = __addon__.getAddonInfo('icon').decode('utf-8')
 __language__ = __addon__.getLocalizedString
-__cwd__ = xbmc.translatePath( __addon__.getAddonInfo('path') ).decode('utf-8')
-__profile__ = xbmc.translatePath( __addon__.getAddonInfo('profile') ).decode('utf-8')
-__resource__ = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'lib' ) ).decode('utf-8')
-__icon_msg__ = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'bulsat.png' ) ).decode('utf-8')
-__data__ = xbmc.translatePath(os.path.join( __profile__, '', 'dat') ).decode('utf-8')
+__cwd__ = xbmc.translatePath(__addon__.getAddonInfo('path')).decode('utf-8')
+__profile__ = xbmc.translatePath(__addon__.getAddonInfo('profile')).decode('utf-8')
+__resource__ = xbmc.translatePath(os.path.join(__cwd__, 'resources', 'lib')).decode('utf-8')
+__icon_msg__ = xbmc.translatePath(os.path.join(__cwd__, 'resources', 'bulsat.png')).decode('utf-8')
+__data__ = xbmc.translatePath(os.path.join(__profile__, '', 'dat')).decode('utf-8')
 __r_path__ = xbmc.translatePath(__addon__.getSetting('w_path')).decode('utf-8')
 sys.path.insert(0, __resource__)
 
@@ -49,15 +48,27 @@ def check_plg():
   else:
     return True
 
-def update(name, dat, crash=None):
-  payload = {}
-  payload['an'] = __scriptname__
-  payload['av'] = __version__
-  payload['ec'] = name
-  payload['ea'] = 'tv_service'
-  payload['ev'] = '1'
-  payload['dl'] = urllib.quote_plus(dat.encode('utf-8'))
-  ga().update(payload, crash)
+def reload_simple_pvr():
+   dp.update(0, "Reloading PVR")
+   version = int(xbmc.getInfoLabel("System.BuildVersion" )[0:2])
+   command = '{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","params":{"addonid":"pvr.iptvsimple","enabled":%s},"id":1}'
+   if version < 17:
+     xbmc.executebuiltin('XBMC.StopPVRManager')
+     dp.update(40, "PVR Manager stopped")
+   else:
+     xbmc.log("%s | Disabling PVR Manager" % __scriptid__, 2)
+     xbmc.executeJSONRPC(command % "false")
+
+   xbmc.sleep(3000)
+
+   if version < 17:
+      dp.update(80, "PVR Manager started")
+      xbmc.sleep(2000)
+      xbmc.executebuiltin('XBMC.StartPVRManager')
+   else:
+      xbmc.log("%s | Enabling PVR Manager" % __scriptid__, 2)
+      xbmc.executeJSONRPC(command % "true")
+
 
 __ua_os = {
   '0' : {'ua' : 'pcweb', 'osid' : 'pcweb'},
@@ -115,7 +126,7 @@ if not __addon__.getSetting('password'):
 
 def dbg_msg(msg):
   if dbg:
-    print'### %s: %s' % (__scriptid__, msg)
+    print('### %s: %s' % (__scriptid__, msg))
 
 import traceback
 try:
@@ -145,7 +156,6 @@ try:
     if len(sys.argv) > 1 and sys.argv[1] == 'False':
       force = False
       dbg_msg('Reload timer')
-      update('reload_timer',  __addon__.getSetting('check_interval'))
       xbmc.executebuiltin('AlarmClock (%s, RunScript(plugin.program.bscfusion, False), %s, silent)' % (__scriptid__, __addon__.getSetting('check_interval')))
 
     if b.gen_all(force):
@@ -162,25 +172,19 @@ try:
 
         if __builtin != '':
           dbg_msg ('builtin exec %s' % __builtin)
-          update('builtin_exec %s' % __builtin, __ua_os[__addon__.getSetting('dev_id')]['osid'])
           xbmc.executebuiltin('%s' % __builtin)
 
         if __script != '':
           dbg_msg ('script exec %s' % __script)
-          update('script_exec %s' % __script, __ua_os[__addon__.getSetting('dev_id')]['osid'])
           os.system(__script)
 
       if __addon__.getSetting('en_reload_pvr')== 'true':
         dbg_msg('Reload PVR')
-        update('reload_pvr', __ua_os[__addon__.getSetting('dev_id')]['osid'])
-        xbmc.executebuiltin('XBMC.StopPVRManager')
-        xbmc.sleep(3000)
-        xbmc.executebuiltin('XBMC.StartPVRManager')
+        reload_simple_pvr()
 
-except Exception, e:
+except Exception as e:
   Notify('Module Import', 'Fail')
   traceback.print_exc()
-  update('exception', str(e.args[0]), sys.exc_info())
   pass
 
 dp.close()
