@@ -36,6 +36,12 @@ def progress_cb (a):
 
 def Notify (msg1, msg2):
   xbmc.executebuiltin((u'Notification(%s,%s,%s,%s)' % (msg1, msg2, '5000', __icon_msg__)).encode('utf-8'))
+  
+def is_playing_service():
+  try:
+    return xbmc.getCondVisibility("Pvr.IsPlayingTv") or xbmc.getCondVisibility("Pvr.IsPlayingRadio")
+  except:
+    return False 
 
 def check_plg():
   js_resp = xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.GetAddons", "id":1}')
@@ -78,51 +84,55 @@ __ua_os = {
   '4' : {'ua' : 'stagefright', 'osid' : 'androidtv'},
 }
 
-if os.path.exists(os.path.join(__data__, '', 'data.dat')):
-  with open(os.path.join(__data__, '', 'data.dat'), 'r') as f:
-    js = json.load(f)
-  if not (js.has_key('app_version') and js['app_version'] == __version__):
-    u = __addon__.getSetting('username')
-    p = __addon__.getSetting('password')
-
-    for root, dirs, files in os.walk(__data__, topdown=False):
-      for name in files:
-        os.remove(os.path.join(root, name))
-      for name in dirs:
-        os.rmdir(os.path.join(root, name))
-    __addon__.setSetting('firstrun', 'true')
-
-if __addon__.getSetting('firstrun') == 'true':
-  Notify('Settings', 'empty')
-  __addon__.openSettings()
-  __addon__.setSetting('firstrun', 'false')
-
-if __addon__.getSetting('dbg') == 'true':
-  dbg = True
+if is_playing_service():
+  xbmc.log("PVR is in use. Delaying playlist regeneration with 5 minutes")
+  xbmc.executebuiltin('AlarmClock(%s, RunScript(%s, False), %s, silent)' % (__scriptid__, __scriptid__, 5))
 else:
-  dbg = False
+	if os.path.exists(os.path.join(__data__, '', 'data.dat')):
+	  with open(os.path.join(__data__, '', 'data.dat'), 'r') as f:
+		js = json.load(f)
+	  if not (js.has_key('app_version') and js['app_version'] == __version__):
+		u = __addon__.getSetting('username')
+		p = __addon__.getSetting('password')
 
-if __addon__.getSetting('xxx') == 'true':
-  xxx = True
-else:
-  xxx = False
+		for root, dirs, files in os.walk(__data__, topdown=False):
+		  for name in files:
+			os.remove(os.path.join(root, name))
+		  for name in dirs:
+			os.rmdir(os.path.join(root, name))
+		__addon__.setSetting('firstrun', 'true')
 
-if __addon__.getSetting('en_group_ch') == 'true':
-  _group_name = False
-else:
-  _group_name = __scriptid__
+	if __addon__.getSetting('firstrun') == 'true':
+	  Notify('Settings', 'empty')
+	  __addon__.openSettings()
+	  __addon__.setSetting('firstrun', 'false')
 
-if __addon__.getSetting('ext_epg') == 'true':
-  etx_epg = True
-  map_url = __addon__.getSetting('map_dat')
-else:
-  etx_epg = False
-  map_url = None
+	if __addon__.getSetting('dbg') == 'true':
+	  dbg = True
+	else:
+	  dbg = False
 
-if not __addon__.getSetting('username'):
-  Notify('User', 'empty')
-if not __addon__.getSetting('password'):
-  Notify('Password', 'empty')
+	if __addon__.getSetting('xxx') == 'true':
+	  xxx = True
+	else:
+	  xxx = False
+
+	if __addon__.getSetting('en_group_ch') == 'true':
+	  _group_name = False
+	else:
+	  _group_name = __scriptid__
+
+	if __addon__.getSetting('ext_epg') == 'true':
+	  etx_epg = True
+	  map_url = __addon__.getSetting('map_dat')
+	else:
+	  etx_epg = False
+	  map_url = None
+
+	if not __addon__.getSetting('username'):
+	  Notify('User', 'empty')
+	if not __addon__.getSetting('password'):
+	  Notify('Password', 'empty')
 
 def dbg_msg(msg):
   if dbg:
@@ -179,8 +189,8 @@ try:
           os.system(__script)
 
       if __addon__.getSetting('en_reload_pvr')== 'true':
-        dbg_msg('Reload PVR')
-        reload_simple_pvr()
+		if not is_player_active():
+			reload_simple_pvr()
 
 except Exception as e:
   Notify('Module Import', 'Fail')
