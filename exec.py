@@ -25,9 +25,6 @@ __data__ = xbmc.translatePath(os.path.join(__profile__, '', 'dat')).decode('utf-
 __r_path__ = xbmc.translatePath(__addon__.getSetting('w_path')).decode('utf-8')
 sys.path.insert(0, __resource__)
 
-dp = xbmcgui.DialogProgressBG()
-dp.create(heading = __scriptname__)
-
 def progress_cb (a):
   _str = __scriptname__
   if a.has_key('idx') and a.has_key('max'):
@@ -55,7 +52,6 @@ def check_plg():
     return True
 
 def reload_simple_pvr():
-   dp.update(0, "Reloading PVR")
    version = int(xbmc.getInfoLabel("System.BuildVersion" )[0:2])
    command = '{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","params":{"addonid":"pvr.iptvsimple","enabled":%s},"id":1}'
    if version < 17:
@@ -78,16 +74,17 @@ def reload_simple_pvr():
 
 __ua_os = {
   '0' : {'ua' : 'pcweb', 'osid' : 'pcweb'},
-  '1' : {'ua' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36', 'osid' : 'samsungtv'},
+  '1' : {'ua' : 'Mozilla/5.0 (SMART-TV; Linux; Tizen 2.3) AppleWebkit/538.1 (KHTML, like Gecko) SamsungBrowser/1.0 TV Safari/538.1', 'osid' : 'samsungtv'},
   '2' : {'ua' : 'HLS Client/2.0 (compatible; LG NetCast.TV-2012)', 'osid' : 'lgtv'},
   '3' : {'ua' : 'Mozilla/5.0 (FreeBSD; Viera; rv:34.0) Gecko/20100101 Firefox/34.0', 'osid' : 'panasonictv'},
   '4' : {'ua' : 'stagefright', 'osid' : 'androidtv'},
 }
 
 if is_playing_service():
-  xbmc.log("PVR is in use. Delaying playlist regeneration with 5 minutes")
-  xbmc.executebuiltin('AlarmClock(%s, RunScript(%s, False), %s, silent)' % (__scriptid__, __scriptid__, 5))
+  xbmc.executebuiltin('AlarmClock(%s, RunScript(%s, True), %s, silent)' % (__scriptid__, __scriptid__, 5))
 else:
+  	dp = xbmcgui.DialogProgressBG()
+  	dp.create(heading = __scriptname__)
 	if os.path.exists(os.path.join(__data__, '', 'data.dat')):
 	  with open(os.path.join(__data__, '', 'data.dat'), 'r') as f:
 		js = json.load(f)
@@ -166,7 +163,7 @@ try:
     if len(sys.argv) > 1 and sys.argv[1] == 'False':
       force = False
       dbg_msg('Reload timer')
-      xbmc.executebuiltin('AlarmClock (%s, RunScript(plugin.program.bscfusion, False), %s, silent)' % (__scriptid__, __addon__.getSetting('check_interval')))
+      xbmc.executebuiltin('AlarmClock (%s, RunScript(plugin.program.bscfusion, True), %s, silent)' % (__scriptid__, __addon__.getSetting('check_interval')))
 
     if b.gen_all(force):
       if __addon__.getSetting('en_cp') == 'true' and __addon__.getSetting('w_path') != '' and xbmcvfs.exists(__r_path__):
@@ -189,8 +186,7 @@ try:
           os.system(__script)
 
       if __addon__.getSetting('en_reload_pvr')== 'true':
-		if not is_playing_service():
-			reload_simple_pvr()
+	  reload_simple_pvr()
 
 except Exception as e:
   Notify('Module Import', 'Fail')

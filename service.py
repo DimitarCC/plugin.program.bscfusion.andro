@@ -2,10 +2,12 @@
 
 import xbmc
 
-xbmc.executebuiltin('RunScript(plugin.program.bscfusion, False)')
+xbmc.executebuiltin('RunScript(plugin.program.bscfusion, True)')
 
-monitor = xbmc.Monitor()
-while not monitor.abortRequested():
-  xbmc.sleep(250)
+if __name__ == '__main__':
+	monitor = xbmc.Monitor()
+	while not monitor.abortRequested():
+  		xbmc.sleep(500)
+	xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","params":{"addonid":"pvr.iptvsimple","enabled":"false"},"id":1}')
 
-xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","params":{"addonid":"pvr.iptvsimple","enabled":"false"},"id":1}')
+

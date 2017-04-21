@@ -6,7 +6,7 @@
     <import addon="script.module.simplejson" version="3.3.0"/>
   </requires>
   <extension point="xbmc.python.script" library="exec.py"/>
-  <extension point="xbmc.service" library="service.py" start="start" />
+  <extension point="xbmc.service" library="service.py" start="startup" />
   <extension point="xbmc.addon.metadata">
         <summary>Bulsat Fusion for KODI</summary>
         <summary lang="en">Addon for watching Fusion from bulsat.com</summary>
