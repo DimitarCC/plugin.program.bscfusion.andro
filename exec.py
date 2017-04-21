@@ -81,7 +81,7 @@ __ua_os = {
 }
 
 if is_playing_service():
-  xbmc.executebuiltin('AlarmClock(%s, RunScript(%s, True), %s, silent)' % (__scriptid__, __scriptid__, 5))
+  xbmc.executebuiltin('AlarmClock(%s, RunScript(%s, False), %s, silent)' % (__scriptid__, __scriptid__, 5))
 else:
   	dp = xbmcgui.DialogProgressBG()
   	dp.create(heading = __scriptname__)
@@ -163,7 +163,7 @@ try:
     if len(sys.argv) > 1 and sys.argv[1] == 'False':
       force = False
       dbg_msg('Reload timer')
-      xbmc.executebuiltin('AlarmClock (%s, RunScript(plugin.program.bscfusion, True), %s, silent)' % (__scriptid__, __addon__.getSetting('check_interval')))
+      xbmc.executebuiltin('AlarmClock (%s, RunScript(plugin.program.bscfusion, False), %s, silent)' % (__scriptid__, __addon__.getSetting('check_interval')))
 
     if b.gen_all(force):
       if __addon__.getSetting('en_cp') == 'true' and __addon__.getSetting('w_path') != '' and xbmcvfs.exists(__r_path__):

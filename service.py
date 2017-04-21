@@ -8,7 +8,7 @@ __addon__ = xbmcaddon.Addon()
 __cwd__ = xbmc.translatePath(__addon__.getAddonInfo('path')).decode('utf-8')
 __icon_msg__ = xbmc.translatePath(os.path.join(__cwd__, 'resources', 'bulsat.png')).decode('utf-8')
 
-xbmc.executebuiltin('RunScript(plugin.program.bscfusion, True)')
+xbmc.executebuiltin('RunScript(plugin.program.bscfusion, False)')
 
 if __name__ == '__main__':
     monitor = xbmc.Monitor()
